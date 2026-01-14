@@ -1,0 +1,1043 @@
+openapi: 3.0.3
+info:
+  title: Task Manager API
+  description: |
+    A RESTful API for managing tasks with user authentication.
+    
+    ## Authentication
+    This API uses JWT (JSON Web Token) Bearer authentication. To access protected endpoints:
+    1. Register a new user account using `/api/v1/auth/register`
+    2. Login with your credentials using `/api/v1/auth/login` to obtain a JWT token
+    3. Include the token in the `Authorization` header as `Bearer <token>` for all protected requests
+    
+    JWT tokens expire after 24 hours from issuance.
+    
+    ## Error Handling
+    All error responses follow a consistent format with `error`, `message`, and `code` fields.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@taskmanager.io
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.taskmanager.io
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Authentication
+    description: User registration and authentication endpoints
+  - name: Tasks
+    description: Task management endpoints (requires authentication)
+
+paths:
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns the health status of the API service. Use this endpoint to verify the service is running and responsive.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: |
+        Creates a new user account with the provided email and password.
+        
+        The email must be unique across all users. If a user with the given email already exists, a 409 Conflict error will be returned.
+      operationId: registerUser
+      requestBody:
+        required: true
+        description: User registration credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              valid_registration:
+                summary: Valid registration
+                value:
+                  email: user@example.com
+                  password: securePassword123
+      responses:
+        '201':
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+              example:
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+                email: user@example.com
+        '400':
+          description: Invalid request - missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_body:
+                  summary: Invalid request body
+                  value:
+                    error: invalid_request
+                    message: Invalid request body
+                    code: 400
+                missing_email:
+                  summary: Missing email
+                  value:
+                    error: validation_error
+                    message: Email is required
+                    code: 400
+                missing_password:
+                  summary: Missing password
+                  value:
+                    error: validation_error
+                    message: Password is required
+                    code: 400
+        '409':
+          description: User with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: user_exists
+                message: User with this email already exists
+                code: 409
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: |
+        Authenticates a user with email and password credentials.
+        
+        On successful authentication, returns a JWT token that should be used in the `Authorization` header for protected endpoints.
+        The token is valid for 24 hours.
+      operationId: loginUser
+      requestBody:
+        required: true
+        description: User login credentials
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              valid_login:
+                summary: Valid login
+                value:
+                  email: user@example.com
+                  password: securePassword123
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAwIiwiZXhwIjoxNzA0MTUzNjAwLCJpYXQiOjE3MDQwNjcyMDB9.signature
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+        '400':
+          description: Invalid request - missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_body:
+                  summary: Invalid request body
+                  value:
+                    error: invalid_request
+                    message: Invalid request body
+                    code: 400
+                missing_email:
+                  summary: Missing email
+                  value:
+                    error: validation_error
+                    message: Email is required
+                    code: 400
+                missing_password:
+                  summary: Missing password
+                  value:
+                    error: validation_error
+                    message: Password is required
+                    code: 400
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: invalid_credentials
+                message: Invalid email or password
+                code: 401
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+  /api/v1/tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Get all tasks for current user
+      description: |
+        Retrieves all tasks belonging to the authenticated user.
+        
+        Tasks are returned in no particular order. Use client-side sorting if needed.
+      operationId: getTasks
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskResponse'
+              example:
+                - id: 550e8400-e29b-41d4-a716-446655440001
+                  user_id: 550e8400-e29b-41d4-a716-446655440000
+                  title: Complete API documentation
+                  description: Write comprehensive OpenAPI specification
+                  status: in_progress
+                  priority: high
+                  created_at: "2024-01-01T10:00:00Z"
+                  updated_at: "2024-01-01T12:30:00Z"
+                - id: 550e8400-e29b-41d4-a716-446655440002
+                  user_id: 550e8400-e29b-41d4-a716-446655440000
+                  title: Review code changes
+                  description: Review PR #123
+                  status: pending
+                  priority: medium
+                  created_at: "2024-01-01T09:00:00Z"
+                  updated_at: "2024-01-01T09:00:00Z"
+        '401':
+          description: Authentication required or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: missing_authorization
+                    message: Authorization header is required
+                    code: 401
+                invalid_format:
+                  summary: Invalid authorization format
+                  value:
+                    error: invalid_authorization
+                    message: Authorization header must be Bearer token
+                    code: 401
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: Invalid or expired token
+                    code: 401
+
+    post:
+      tags:
+        - Tasks
+      summary: Create a new task
+      description: |
+        Creates a new task for the authenticated user.
+        
+        The `title` field is required. If `priority` is not provided, it defaults to `medium`.
+        The task status is automatically set to `pending` on creation.
+      operationId: createTask
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        description: Task details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+            examples:
+              minimal:
+                summary: Minimal task (title only)
+                value:
+                  title: Buy groceries
+              full:
+                summary: Full task details
+                value:
+                  title: Complete API documentation
+                  description: Write comprehensive OpenAPI specification for all endpoints
+                  priority: high
+      responses:
+        '201':
+          description: Task successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440001
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+                title: Complete API documentation
+                description: Write comprehensive OpenAPI specification for all endpoints
+                status: pending
+                priority: high
+                created_at: "2024-01-01T10:00:00Z"
+                updated_at: "2024-01-01T10:00:00Z"
+        '400':
+          description: Invalid request - missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_body:
+                  summary: Invalid request body
+                  value:
+                    error: invalid_request
+                    message: Invalid request body
+                    code: 400
+                missing_title:
+                  summary: Missing title
+                  value:
+                    error: validation_error
+                    message: Title is required
+                    code: 400
+                invalid_priority:
+                  summary: Invalid priority value
+                  value:
+                    error: validation_error
+                    message: Priority must be low, medium, or high
+                    code: 400
+        '401':
+          description: Authentication required or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: missing_authorization
+                    message: Authorization header is required
+                    code: 401
+                invalid_format:
+                  summary: Invalid authorization format
+                  value:
+                    error: invalid_authorization
+                    message: Authorization header must be Bearer token
+                    code: 401
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: Invalid or expired token
+                    code: 401
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+  /api/v1/tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the task (UUID format)
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440001
+
+    get:
+      tags:
+        - Tasks
+      summary: Get a specific task
+      description: |
+        Retrieves a specific task by its ID.
+        
+        The authenticated user must be the owner of the task. Attempting to access another user's task will result in a 401 Unauthorized error.
+      operationId: getTask
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440001
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+                title: Complete API documentation
+                description: Write comprehensive OpenAPI specification for all endpoints
+                status: in_progress
+                priority: high
+                created_at: "2024-01-01T10:00:00Z"
+                updated_at: "2024-01-01T12:30:00Z"
+        '401':
+          description: Authentication required, invalid token, or unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: missing_authorization
+                    message: Authorization header is required
+                    code: 401
+                invalid_format:
+                  summary: Invalid authorization format
+                  value:
+                    error: invalid_authorization
+                    message: Authorization header must be Bearer token
+                    code: 401
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: Invalid or expired token
+                    code: 401
+                unauthorized:
+                  summary: Not owner of task
+                  value:
+                    error: unauthorized
+                    message: You don't have access to this task
+                    code: 401
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: task_not_found
+                message: Task not found
+                code: 404
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+    put:
+      tags:
+        - Tasks
+      summary: Update a task
+      description: |
+        Updates all fields of a specific task.
+        
+        The `title` field is required. If `priority` is not provided, it defaults to `medium`.
+        The `updated_at` timestamp will be set to the current time.
+        
+        The authenticated user must be the owner of the task.
+      operationId: updateTask
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        description: Updated task details
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+            examples:
+              full_update:
+                summary: Full task update
+                value:
+                  title: Complete API documentation (updated)
+                  description: Updated description with more details
+                  priority: high
+      responses:
+        '200':
+          description: Task successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440001
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+                title: Complete API documentation (updated)
+                description: Updated description with more details
+                status: in_progress
+                priority: high
+                created_at: "2024-01-01T10:00:00Z"
+                updated_at: "2024-01-01T14:00:00Z"
+        '400':
+          description: Invalid request - missing or invalid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_body:
+                  summary: Invalid request body
+                  value:
+                    error: invalid_request
+                    message: Invalid request body
+                    code: 400
+                missing_title:
+                  summary: Missing title
+                  value:
+                    error: validation_error
+                    message: Title is required
+                    code: 400
+                invalid_priority:
+                  summary: Invalid priority value
+                  value:
+                    error: validation_error
+                    message: Priority must be low, medium, or high
+                    code: 400
+        '401':
+          description: Authentication required, invalid token, or unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: missing_authorization
+                    message: Authorization header is required
+                    code: 401
+                invalid_format:
+                  summary: Invalid authorization format
+                  value:
+                    error: invalid_authorization
+                    message: Authorization header must be Bearer token
+                    code: 401
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: Invalid or expired token
+                    code: 401
+                unauthorized:
+                  summary: Not owner of task
+                  value:
+                    error: unauthorized
+                    message: You don't have access to this task
+                    code: 401
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: task_not_found
+                message: Task not found
+                code: 404
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+    delete:
+      tags:
+        - Tasks
+      summary: Delete a task
+      description: |
+        Permanently deletes a specific task.
+        
+        The authenticated user must be the owner of the task.
+        This operation cannot be undone.
+      operationId: deleteTask
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Task successfully deleted (no content returned)
+        '401':
+          description: Authentication required, invalid token, or unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: missing_authorization
+                    message: Authorization header is required
+                    code: 401
+                invalid_format:
+                  summary: Invalid authorization format
+                  value:
+                    error: invalid_authorization
+                    message: Authorization header must be Bearer token
+                    code: 401
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: Invalid or expired token
+                    code: 401
+                unauthorized:
+                  summary: Not owner of task
+                  value:
+                    error: unauthorized
+                    message: You don't have access to this task
+                    code: 401
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: task_not_found
+                message: Task not found
+                code: 404
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+  /api/v1/tasks/{id}/status:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the task (UUID format)
+        schema:
+          type: string
+          format: uuid
+        example: 550e8400-e29b-41d4-a716-446655440001
+
+    patch:
+      tags:
+        - Tasks
+      summary: Update task status
+      description: |
+        Updates only the status of a specific task.
+        
+        This is a partial update endpoint that only modifies the task's status field.
+        The `updated_at` timestamp will be set to the current time.
+        
+        Valid status values:
+        - `pending` - Task has not been started
+        - `in_progress` - Task is currently being worked on
+        - `done` - Task has been completed
+        
+        The authenticated user must be the owner of the task.
+      operationId: updateTaskStatus
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        description: New status value
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+            examples:
+              start_task:
+                summary: Start working on task
+                value:
+                  status: in_progress
+              complete_task:
+                summary: Mark task as done
+                value:
+                  status: done
+              reset_task:
+                summary: Reset task to pending
+                value:
+                  status: pending
+      responses:
+        '200':
+          description: Task status successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440001
+                user_id: 550e8400-e29b-41d4-a716-446655440000
+                title: Complete API documentation
+                description: Write comprehensive OpenAPI specification for all endpoints
+                status: done
+                priority: high
+                created_at: "2024-01-01T10:00:00Z"
+                updated_at: "2024-01-01T16:00:00Z"
+        '400':
+          description: Invalid request - missing or invalid status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_body:
+                  summary: Invalid request body
+                  value:
+                    error: invalid_request
+                    message: Invalid request body
+                    code: 400
+                missing_status:
+                  summary: Missing status
+                  value:
+                    error: validation_error
+                    message: Status is required
+                    code: 400
+                invalid_status:
+                  summary: Invalid status value
+                  value:
+                    error: validation_error
+                    message: Status must be pending, in_progress, or done
+                    code: 400
+        '401':
+          description: Authentication required, invalid token, or unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: missing_authorization
+                    message: Authorization header is required
+                    code: 401
+                invalid_format:
+                  summary: Invalid authorization format
+                  value:
+                    error: invalid_authorization
+                    message: Authorization header must be Bearer token
+                    code: 401
+                invalid_token:
+                  summary: Invalid or expired token
+                  value:
+                    error: invalid_token
+                    message: Invalid or expired token
+                    code: 401
+                unauthorized:
+                  summary: Not owner of task
+                  value:
+                    error: unauthorized
+                    message: You don't have access to this task
+                    code: 401
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: task_not_found
+                message: Task not found
+                code: 404
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: internal_error
+                message: Internal server error
+                code: 500
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from the `/api/v1/auth/login` endpoint.
+        
+        Include the token in the Authorization header:
+        `Authorization: Bearer <token>`
+        
+        Tokens expire after 24 hours.
+
+  schemas:
+    HealthResponse:
+      type: object
+      description: Health check response
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Health status of the service
+          enum:
+            - ok
+          example: ok
+
+    RegisterRequest:
+      type: object
+      description: User registration request
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address (must be unique)
+          minLength: 1
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: User's password
+          minLength: 1
+          example: securePassword123
+
+    RegisterResponse:
+      type: object
+      description: User registration response
+      required:
+        - user_id
+        - email
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the created user
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          description: Email address of the created user
+          example: user@example.com
+
+    LoginRequest:
+      type: object
+      description: User login request
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          minLength: 1
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: User's password
+          minLength: 1
+          example: securePassword123
+
+    LoginResponse:
+      type: object
+      description: User login response
+      required:
+        - token
+        - user_id
+      properties:
+        token:
+          type: string
+          description: JWT authentication token (valid for 24 hours)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAwIiwiZXhwIjoxNzA0MTUzNjAwLCJpYXQiOjE3MDQwNjcyMDB9.signature
+        user_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the authenticated user
+          example: 550e8400-e29b-41d4-a716-446655440000
+
+    CreateTaskRequest:
+      type: object
+      description: Request to create a new task
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Title of the task
+          minLength: 1
+          example: Complete API documentation
+        description:
+          type: string
+          description: Detailed description of the task
+          example: Write comprehensive OpenAPI specification for all endpoints
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+
+    UpdateTaskRequest:
+      type: object
+      description: Request to update a task
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Title of the task
+          minLength: 1
+          example: Complete API documentation (updated)
+        description:
+          type: string
+          description: Detailed description of the task
+          example: Updated description with more details
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+
+    UpdateStatusRequest:
+      type: object
+      description: Request to update task status
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+
+    TaskResponse:
+      type: object
+      description: Task details response
+      required:
+        - id
+        - user_id
+        - title
+        - description
+        - status
+        - priority
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the task
+          example: 550e8400-e29b-41d4-a716-446655440001
+        user_id:
+          type: string
+          format: uuid
+          description: Unique identifier of the task owner
+          example: 550e8400-e29b-41d4-a716-446655440000
+        title:
+          type: string
+          description: Title of the task
+          example: Complete API documentation
+        description:
+          type: string
+          description: Detailed description of the task
+          example: Write comprehensive OpenAPI specification for all endpoints
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the task was created
+          example: "2024-01-01T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the task was last updated
+          example: "2024-01-01T12:30:00Z"
+
+    TaskStatus:
+      type: string
+      description: Current status of the task
+      enum:
+        - pending
+        - in_progress
+        - done
+      default: pending
+      example: pending
+
+    TaskPriority:
+      type: string
+      description: Priority level of the task
+      enum:
+        - low
+        - medium
+        - high
+      default: medium
+      example: medium
+
+    ErrorResponse:
+      type: object
+      description: Standard error response
+      required:
+        - error
+        - message
+        - code
+      properties:
+        error:
+          type: string
+          description: Error code identifier
+          example: validation_error
+        message:
+          type: string
+          description: Human-readable error message
+          example: Title is required
+        code:
+          type: integer
+          description: HTTP status code
+          minimum: 400
+          maximum: 599
+          example: 400
