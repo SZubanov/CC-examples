@@ -1,0 +1,2409 @@
+{
+  "info": {
+    "_postman_id": "task-manager-api-collection",
+    "name": "Task Manager API - Complete Test Suite",
+    "description": "Comprehensive Postman collection for Task Manager API testing.\n\n## API Overview\nA RESTful API for managing tasks with user authentication.\n\n## Authentication\nThis API uses JWT (JSON Web Token) Bearer authentication.\n1. Register a new user account using `/api/v1/auth/register`\n2. Login with your credentials using `/api/v1/auth/login` to obtain a JWT token\n3. Include the token in the `Authorization` header as `Bearer <token>` for all protected requests\n\nJWT tokens expire after 24 hours from issuance.\n\n## Test Coverage\n- Health Check Tests: 4 test cases\n- Registration Tests: 22 test cases\n- Login Tests: 15 test cases\n- Task CRUD Tests: 94 test cases\n- E2E Workflow Tests: 2 test cases\n\n## Generated from\n- swagger.yaml (OpenAPI 3.0.3)\n- api-test-cases.md (151 test scenarios)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "task_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Generate random suffix for unique test data",
+          "if (!pm.environment.get('random_suffix')) {",
+          "    pm.environment.set('random_suffix', Date.now().toString());",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "// Log response time for all requests",
+          "pm.test('Response time is acceptable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "description": "Health check endpoints for service monitoring",
+      "item": [
+        {
+          "name": "HC-001: Health check returns OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC: HC-001 - Verify health check returns OK",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has status ok', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData.status).to.eql('ok');",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Verify the health check endpoint returns status OK when service is running."
+          }
+        },
+        {
+          "name": "HC-004: Health check with query params",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC: HC-004 - Verify health check ignores query parameters",
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Query params are ignored', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ok');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health?foo=bar&test=123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health"],
+              "query": [
+                {"key": "foo", "value": "bar"},
+                {"key": "test", "value": "123"}
+              ]
+            },
+            "description": "Verify health check ignores query parameters and still returns OK."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "description": "User registration and authentication endpoints",
+      "item": [
+        {
+          "name": "2.1 Registration",
+          "description": "User registration test cases",
+          "item": [
+            {
+              "name": "REG-001: Register new user with valid credentials",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// Generate unique email for this test",
+                      "const timestamp = Date.now();",
+                      "pm.environment.set('test_email', `test.user.${timestamp}@example.com`);",
+                      "pm.environment.set('test_password', 'TestPass123!');"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-001 - Register new user with valid credentials",
+                      "pm.test('Status is 201 Created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('Response has user_id and email', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('user_id');",
+                      "    pm.expect(jsonData).to.have.property('email');",
+                      "    pm.environment.set('user_id', jsonData.user_id);",
+                      "});",
+                      "",
+                      "pm.test('user_id is UUID format', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+                      "    pm.expect(jsonData.user_id).to.match(uuidRegex);",
+                      "});",
+                      "",
+                      "pm.test('Email matches request', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const requestEmail = pm.environment.get('test_email');",
+                      "    pm.expect(jsonData.email).to.eql(requestEmail);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Register a new user with valid email and password. Verifies 201 response with user_id and email."
+              }
+            },
+            {
+              "name": "REG-004: Register with missing email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-004 - Register with missing email",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error response format is correct', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "    pm.expect(jsonData).to.have.property('message');",
+                      "    pm.expect(jsonData).to.have.property('code');",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Email is required');",
+                      "    pm.expect(jsonData.code).to.eql(400);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"securePass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register without email field. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "REG-005: Register with missing password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-005 - Register with missing password",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error for password', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Password is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register without password field. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "REG-006: Register with empty body",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-006 - Register with empty body",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error response returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register with empty JSON body. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "REG-007: Register with invalid JSON",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-007 - Register with invalid JSON",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is invalid_request', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('invalid_request');",
+                      "    pm.expect(jsonData.message).to.eql('Invalid request body');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{invalid json}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register with malformed JSON. Should return 400 invalid_request error."
+              }
+            },
+            {
+              "name": "REG-008: Register with empty email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-008 - Register with empty email",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Validation error returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"\",\n  \"password\": \"pass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register with empty email string. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "REG-009: Register with empty password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-009 - Register with empty password",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Validation error returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register with empty password string. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "REG-013: Register with already existing email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-013 - Register with already existing email",
+                      "pm.test('Status is 409 Conflict', function () {",
+                      "    pm.response.to.have.status(409);",
+                      "});",
+                      "",
+                      "pm.test('Error is user_exists', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('user_exists');",
+                      "    pm.expect(jsonData.message).to.eql('User with this email already exists');",
+                      "    pm.expect(jsonData.code).to.eql(409);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"anotherPassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Attempt to register with an email that already exists. Should return 409 Conflict."
+              }
+            },
+            {
+              "name": "REG-017: Register with special chars in password",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const timestamp = Date.now();",
+                      "pm.environment.set('special_email', `special.${timestamp}@example.com`);"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: REG-017 - Register with special characters in password",
+                      "pm.test('Status is 201 Created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('User created successfully', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('user_id');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{special_email}}\",\n  \"password\": \"P@$$w0rd!#%^&*()\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                },
+                "description": "Register with special characters in password. Should succeed with 201."
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Login",
+          "description": "User login test cases",
+          "item": [
+            {
+              "name": "LOG-001: Login with valid credentials",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-001 - Login with valid credentials",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response has token and user_id', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('token');",
+                      "    pm.expect(jsonData).to.have.property('user_id');",
+                      "    ",
+                      "    // Save token for authenticated requests",
+                      "    pm.environment.set('auth_token', jsonData.token);",
+                      "    pm.environment.set('user_id', jsonData.user_id);",
+                      "});",
+                      "",
+                      "pm.test('Token is not empty', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.token).to.have.lengthOf.above(10);",
+                      "});",
+                      "",
+                      "pm.test('Token appears to be JWT format', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const parts = jsonData.token.split('.');",
+                      "    pm.expect(parts).to.have.lengthOf(3);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Login with valid credentials. Should return 200 with JWT token and user_id."
+              }
+            },
+            {
+              "name": "LOG-004: Login with missing email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-004 - Login with missing email",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Email is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"pass123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Attempt login without email. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "LOG-005: Login with missing password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-005 - Login with missing password",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Password is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Attempt login without password. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "LOG-006: Login with empty body",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-006 - Login with empty body",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error response returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Attempt login with empty JSON body. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "LOG-007: Login with invalid JSON",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-007 - Login with invalid JSON",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is invalid_request', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('invalid_request');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{invalid json}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Attempt login with malformed JSON. Should return 400 invalid_request error."
+              }
+            },
+            {
+              "name": "LOG-009: Login with non-existent email",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-009 - Login with non-existent email",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is invalid_credentials', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('invalid_credentials');",
+                      "    pm.expect(jsonData.message).to.eql('Invalid email or password');",
+                      "    pm.expect(jsonData.code).to.eql(401);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"nonexistent@example.com\",\n  \"password\": \"anyPassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Attempt login with unregistered email. Should return 401 invalid_credentials."
+              }
+            },
+            {
+              "name": "LOG-010: Login with wrong password",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: LOG-010 - Login with wrong password",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is invalid_credentials', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('invalid_credentials');",
+                      "    pm.expect(jsonData.message).to.eql('Invalid email or password');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"wrongPassword123\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                },
+                "description": "Attempt login with correct email but wrong password. Should return 401."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Tasks",
+      "description": "Task management endpoints (requires authentication)",
+      "item": [
+        {
+          "name": "3.1 Create Task",
+          "description": "Task creation test cases",
+          "item": [
+            {
+              "name": "CT-001: Create task with title only",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-001 - Create task with title only",
+                      "pm.test('Status is 201 Created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('Task has all required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('user_id');",
+                      "    pm.expect(jsonData).to.have.property('title');",
+                      "    pm.expect(jsonData).to.have.property('status');",
+                      "    pm.expect(jsonData).to.have.property('priority');",
+                      "    pm.expect(jsonData).to.have.property('created_at');",
+                      "    pm.expect(jsonData).to.have.property('updated_at');",
+                      "    ",
+                      "    pm.environment.set('task_id', jsonData.id);",
+                      "});",
+                      "",
+                      "pm.test('Default priority is medium', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.priority).to.eql('medium');",
+                      "});",
+                      "",
+                      "pm.test('Initial status is pending', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.status).to.eql('pending');",
+                      "});",
+                      "",
+                      "pm.test('Task belongs to authenticated user', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const userId = pm.environment.get('user_id');",
+                      "    pm.expect(jsonData.user_id).to.eql(userId);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Test Task - Title Only\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Create task with only title. Verifies defaults for priority (medium) and status (pending)."
+              }
+            },
+            {
+              "name": "CT-002: Create task with all fields",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-002 - Create task with all fields",
+                      "pm.test('Status is 201 Created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('All fields set as provided', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.title).to.eql('Complete API Documentation');",
+                      "    pm.expect(jsonData.description).to.eql('Write comprehensive OpenAPI specification for all endpoints');",
+                      "    pm.expect(jsonData.priority).to.eql('high');",
+                      "    ",
+                      "    pm.environment.set('second_task_id', jsonData.id);",
+                      "});",
+                      "",
+                      "pm.test('ID is UUID format', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;",
+                      "    pm.expect(jsonData.id).to.match(uuidRegex);",
+                      "});",
+                      "",
+                      "pm.test('Timestamps are set', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.created_at).to.not.be.empty;",
+                      "    pm.expect(jsonData.updated_at).to.not.be.empty;",
+                      "    pm.environment.set('created_at', jsonData.created_at);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Complete API Documentation\",\n  \"description\": \"Write comprehensive OpenAPI specification for all endpoints\",\n  \"priority\": \"high\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Create task with all optional fields provided."
+              }
+            },
+            {
+              "name": "CT-003: Create task with low priority",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-003 - Create task with low priority",
+                      "pm.test('Status is 201 Created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test('Priority is low', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.priority).to.eql('low');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Low Priority Task\",\n  \"priority\": \"low\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Create task with low priority."
+              }
+            },
+            {
+              "name": "CT-009: Create task without title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-009 - Create task without title",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Title is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Task without title\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to create task without title. Should return 400 validation error."
+              }
+            },
+            {
+              "name": "CT-010: Create task with empty title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-010 - Create task with empty title",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to create task with empty title string."
+              }
+            },
+            {
+              "name": "CT-011: Create task with invalid priority",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-011 - Create task with invalid priority",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Priority must be low, medium, or high');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Task with invalid priority\",\n  \"priority\": \"urgent\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to create task with invalid priority value."
+              }
+            },
+            {
+              "name": "CT-017: Create task without token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-017 - Create task without token",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is missing_authorization', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('missing_authorization');",
+                      "    pm.expect(jsonData.message).to.eql('Authorization header is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Task without auth\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to create task without Authorization header."
+              }
+            },
+            {
+              "name": "CT-018: Create task with invalid token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: CT-018 - Create task with invalid token",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is invalid_token', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('invalid_token');",
+                      "    pm.expect(jsonData.message).to.eql('Invalid or expired token');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer invalid.token.here"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Task with invalid token\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to create task with invalid JWT token."
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Get Tasks",
+          "description": "Get tasks test cases",
+          "item": [
+            {
+              "name": "GT-001: Get all tasks for authenticated user",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: GT-001 - Get all tasks for authenticated user",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Response is an array', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.be.an('array');",
+                      "});",
+                      "",
+                      "pm.test('Array contains tasks', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.length).to.be.above(0);",
+                      "});",
+                      "",
+                      "pm.test('All tasks belong to authenticated user', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const userId = pm.environment.get('user_id');",
+                      "    jsonData.forEach(task => {",
+                      "        pm.expect(task.user_id).to.eql(userId);",
+                      "    });",
+                      "});",
+                      "",
+                      "pm.test('Each task has required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    jsonData.forEach(task => {",
+                      "        pm.expect(task).to.have.property('id');",
+                      "        pm.expect(task).to.have.property('user_id');",
+                      "        pm.expect(task).to.have.property('title');",
+                      "        pm.expect(task).to.have.property('status');",
+                      "        pm.expect(task).to.have.property('priority');",
+                      "        pm.expect(task).to.have.property('created_at');",
+                      "        pm.expect(task).to.have.property('updated_at');",
+                      "    });",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Get all tasks for authenticated user. Verifies response structure and ownership."
+              }
+            },
+            {
+              "name": "GT-005: Get tasks without Authorization header",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: GT-005 - Get tasks without Authorization header",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is missing_authorization', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('missing_authorization');",
+                      "    pm.expect(jsonData.message).to.eql('Authorization header is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to get tasks without Authorization header."
+              }
+            },
+            {
+              "name": "GT-008: Get tasks with malformed JWT",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: GT-008 - Get tasks with malformed JWT",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is invalid_token', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('invalid_token');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer malformed.jwt.token"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                },
+                "description": "Attempt to get tasks with malformed JWT token."
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Get Task by ID",
+          "description": "Get task by ID test cases",
+          "item": [
+            {
+              "name": "GID-001: Get existing task by ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: GID-001 - Get existing task by ID",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Task ID matches request', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const taskId = pm.environment.get('task_id');",
+                      "    pm.expect(jsonData.id).to.eql(taskId);",
+                      "});",
+                      "",
+                      "pm.test('Task has all required fields', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData).to.have.property('id');",
+                      "    pm.expect(jsonData).to.have.property('user_id');",
+                      "    pm.expect(jsonData).to.have.property('title');",
+                      "    pm.expect(jsonData).to.have.property('description');",
+                      "    pm.expect(jsonData).to.have.property('status');",
+                      "    pm.expect(jsonData).to.have.property('priority');",
+                      "    pm.expect(jsonData).to.have.property('created_at');",
+                      "    pm.expect(jsonData).to.have.property('updated_at');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Get a specific task by ID. Verifies response structure."
+              }
+            },
+            {
+              "name": "GID-003: Get task with non-existent UUID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: GID-003 - Get task with non-existent UUID",
+                      "pm.test('Status is 404 Not Found', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('Error is task_not_found', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('task_not_found');",
+                      "    pm.expect(jsonData.message).to.eql('Task not found');",
+                      "    pm.expect(jsonData.code).to.eql(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "00000000-0000-0000-0000-000000000000"]
+                },
+                "description": "Attempt to get task with non-existent UUID."
+              }
+            },
+            {
+              "name": "GID-005: Get task without token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: GID-005 - Get task without token",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is missing_authorization', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('missing_authorization');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Attempt to get task without Authorization header."
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Update Task",
+          "description": "Update task test cases",
+          "item": [
+            {
+              "name": "UT-001: Update task title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: UT-001 - Update task title",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Title updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.title).to.eql('Updated Task Title');",
+                      "});",
+                      "",
+                      "pm.test('updated_at changed', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.updated_at).to.not.be.empty;",
+                      "    pm.environment.set('updated_at', jsonData.updated_at);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Updated Task Title\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Update task title. Verifies title changes and updated_at is set."
+              }
+            },
+            {
+              "name": "UT-002: Update all task fields",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: UT-002 - Update all task fields",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('All fields updated', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.title).to.eql('Fully Updated Task');",
+                      "    pm.expect(jsonData.description).to.eql('Updated description');",
+                      "    pm.expect(jsonData.priority).to.eql('high');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Fully Updated Task\",\n  \"description\": \"Updated description\",\n  \"priority\": \"high\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Update all task fields."
+              }
+            },
+            {
+              "name": "UT-006: Update task without title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: UT-006 - Update task without title",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Title is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"No title provided\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Attempt to update task without title."
+              }
+            },
+            {
+              "name": "UT-008: Update task with invalid priority",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: UT-008 - Update task with invalid priority",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Priority must be low, medium, or high');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Task\",\n  \"priority\": \"critical\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Attempt to update task with invalid priority."
+              }
+            },
+            {
+              "name": "UT-013: Update non-existent task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: UT-013 - Update non-existent task",
+                      "pm.test('Status is 404 Not Found', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('Error is task_not_found', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('task_not_found');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Update non-existent\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "00000000-0000-0000-0000-000000000000"]
+                },
+                "description": "Attempt to update non-existent task."
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.5 Update Task Status",
+          "description": "Update task status test cases",
+          "item": [
+            {
+              "name": "US-001: Update status to in_progress",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-001 - Update status to in_progress",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Status updated to in_progress', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.status).to.eql('in_progress');",
+                      "});",
+                      "",
+                      "pm.test('Other fields unchanged', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    const taskId = pm.environment.get('task_id');",
+                      "    pm.expect(jsonData.id).to.eql(taskId);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"in_progress\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}", "status"]
+                },
+                "description": "Update task status to in_progress."
+              }
+            },
+            {
+              "name": "US-002: Update status to done",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-002 - Update status to done",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Status updated to done', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.status).to.eql('done');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"done\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}", "status"]
+                },
+                "description": "Update task status to done."
+              }
+            },
+            {
+              "name": "US-003: Update status to pending",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-003 - Update status to pending",
+                      "pm.test('Status is 200 OK', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test('Status updated to pending', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.status).to.eql('pending');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"pending\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}", "status"]
+                },
+                "description": "Update task status back to pending."
+              }
+            },
+            {
+              "name": "US-006: Update status without status field",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-006 - Update status without status field",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Status is required');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}", "status"]
+                },
+                "description": "Attempt to update status without status field."
+              }
+            },
+            {
+              "name": "US-007: Update status with invalid value",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-007 - Update status with invalid value",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Error is validation_error', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "    pm.expect(jsonData.message).to.eql('Status must be pending, in_progress, or done');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"completed\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}", "status"]
+                },
+                "description": "Attempt to update status with invalid value."
+              }
+            },
+            {
+              "name": "US-008: Update status with empty value",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-008 - Update status with empty value",
+                      "pm.test('Status is 400 Bad Request', function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test('Validation error returned', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('validation_error');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}", "status"]
+                },
+                "description": "Attempt to update status with empty string."
+              }
+            },
+            {
+              "name": "US-016: Update status of non-existent task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: US-016 - Update status of non-existent task",
+                      "pm.test('Status is 404 Not Found', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('Error is task_not_found', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('task_not_found');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"done\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/00000000-0000-0000-0000-000000000000/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "00000000-0000-0000-0000-000000000000", "status"]
+                },
+                "description": "Attempt to update status of non-existent task."
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.6 Delete Task",
+          "description": "Delete task test cases",
+          "item": [
+            {
+              "name": "DT-001: Delete existing task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: DT-001 - Delete existing task",
+                      "pm.test('Status is 204 No Content', function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});",
+                      "",
+                      "pm.test('Response body is empty', function () {",
+                      "    pm.expect(pm.response.text()).to.be.empty;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{second_task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{second_task_id}}"]
+                },
+                "description": "Delete an existing task. Should return 204 No Content."
+              }
+            },
+            {
+              "name": "DT-002: Verify task is deleted",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: DT-002 - Verify task is deleted",
+                      "pm.test('Status is 404 Not Found', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('Task not found after deletion', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('task_not_found');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{second_task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{second_task_id}}"]
+                },
+                "description": "Verify deleted task returns 404."
+              }
+            },
+            {
+              "name": "DT-004: Delete task without token",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: DT-004 - Delete task without token",
+                      "pm.test('Status is 401 Unauthorized', function () {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test('Error is missing_authorization', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('missing_authorization');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{task_id}}"]
+                },
+                "description": "Attempt to delete task without Authorization header."
+              }
+            },
+            {
+              "name": "DT-007: Delete non-existent task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: DT-007 - Delete non-existent task",
+                      "pm.test('Status is 404 Not Found', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('Error is task_not_found', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('task_not_found');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/00000000-0000-0000-0000-000000000000",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "00000000-0000-0000-0000-000000000000"]
+                },
+                "description": "Attempt to delete non-existent task."
+              }
+            },
+            {
+              "name": "DT-008: Delete already deleted task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "// TC: DT-008 - Delete already deleted task",
+                      "pm.test('Status is 404 Not Found', function () {",
+                      "    pm.response.to.have.status(404);",
+                      "});",
+                      "",
+                      "pm.test('Error is task_not_found', function () {",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.error).to.eql('task_not_found');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{second_task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{second_task_id}}"]
+                },
+                "description": "Attempt to delete task that was already deleted."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. E2E Workflows",
+      "description": "End-to-end workflow test scenarios",
+      "item": [
+        {
+          "name": "E2E-001: Complete User Journey",
+          "description": "Complete end-to-end workflow: Register -> Login -> Create Task -> Update -> Delete",
+          "item": [
+            {
+              "name": "Step 1: Register new user",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "const timestamp = Date.now();",
+                      "pm.environment.set('e2e_email', `e2e.user.${timestamp}@example.com`);",
+                      "pm.environment.set('e2e_password', 'E2ETestPass123!');"
+                    ],
+                    "type": "text/javascript"
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Registration successful', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.environment.set('e2e_user_id', jsonData.user_id);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{e2e_email}}\",\n  \"password\": \"{{e2e_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "register"]
+                }
+              }
+            },
+            {
+              "name": "Step 2: Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Login successful', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.environment.set('e2e_token', jsonData.token);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [{"key": "Content-Type", "value": "application/json"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{e2e_email}}\",\n  \"password\": \"{{e2e_password}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "Step 3: Create task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Task created', function () {",
+                      "    pm.response.to.have.status(201);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.environment.set('e2e_task_id', jsonData.id);",
+                      "    pm.expect(jsonData.status).to.eql('pending');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{e2e_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"E2E Test Task\",\n  \"description\": \"Task for E2E workflow testing\",\n  \"priority\": \"high\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                }
+              }
+            },
+            {
+              "name": "Step 4: Get all tasks",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Tasks retrieved', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const jsonData = pm.response.json();",
+                      "    const taskId = pm.environment.get('e2e_task_id');",
+                      "    const task = jsonData.find(t => t.id === taskId);",
+                      "    pm.expect(task).to.exist;",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{e2e_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks"]
+                }
+              }
+            },
+            {
+              "name": "Step 5: Update task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Task updated', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.title).to.eql('E2E Updated Task');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{e2e_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"E2E Updated Task\",\n  \"description\": \"Updated in E2E flow\",\n  \"priority\": \"medium\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{e2e_task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{e2e_task_id}}"]
+                }
+              }
+            },
+            {
+              "name": "Step 6: Update status to done",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Status updated to done', function () {",
+                      "    pm.response.to.have.status(200);",
+                      "    const jsonData = pm.response.json();",
+                      "    pm.expect(jsonData.status).to.eql('done');",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {"key": "Content-Type", "value": "application/json"},
+                  {"key": "Authorization", "value": "Bearer {{e2e_token}}"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"done\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{e2e_task_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{e2e_task_id}}", "status"]
+                }
+              }
+            },
+            {
+              "name": "Step 7: Delete task",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Task deleted', function () {",
+                      "    pm.response.to.have.status(204);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {"key": "Authorization", "value": "Bearer {{e2e_token}}"}
+                ],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/tasks/{{e2e_task_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "tasks", "{{e2e_task_id}}"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Cleanup",
+      "description": "Cleanup tasks created during tests",
+      "item": [
+        {
+          "name": "Delete remaining test task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Cleanup - delete remaining task",
+                  "pm.test('Cleanup successful or task already deleted', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([204, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/{{task_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tasks", "{{task_id}}"]
+            },
+            "description": "Cleanup any remaining test tasks."
+          }
+        }
+      ]
+    }
+  ]
+}

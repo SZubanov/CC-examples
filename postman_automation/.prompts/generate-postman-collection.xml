@@ -1,0 +1,36 @@
+<rule>
+    Don't proceed if don't have access to context7.
+    Don't proceed if environment is not ready. Docker containers must be running, external containers must be accessible.
+    Always run CLI commands in the container where code resides.
+    If you cannot find concrete information, STOP and ask rather than doing assumptions.
+    Execute plan task-by-task validating each step before proceeding to the next one.
+</rule>
+<role>
+    act as @agent-qa-expert
+</role>
+<mcp>
+    context7
+</mcp>
+<context>
+    I started to work with new service. My task is "test api".
+    I found out that project doesn't have:
+        1. Swagger documentation.
+        2. Test cases for api testing.
+        3. Automated tests.
+</context>
+<task>
+    Your task is prepare postman collection and environment to run tests.
+      1. Read `api/openapi.yaml` for endpoint definitions
+      2. Read `api/api-test-cases.md` for test scenarios
+      3. Generate Postman Collection with:
+         - All API endpoints
+         - Organized folders by tags/categories
+         - Request examples
+         - Pre-request scripts for setup
+         - Test scripts for validation
+         - Environment variables for chaining
+</task>
+<output>
+    postman_automation/api/postman_collection.json
+    postman_automation/api/postman_environment.json
+</output>

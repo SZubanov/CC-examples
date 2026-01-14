@@ -1,0 +1,36 @@
+
+<rule>
+    Don't proceed if don't have access to context7.
+    Don't proceed if environment is not ready. Docker containers must be running, external containers must be accessible.
+    Always run CLI commands in the container where code resides.
+    If you cannot find concrete information, STOP and ask rather than doing assumptions.
+    Execute plan task-by-task validating each step before proceeding to the next one.
+    Do not describe Concurrency, Performance and Security tests.
+</rule>
+<role>
+    act as @agent-qa-expert
+</role>
+<mcp>
+    context7
+</mcp>
+<context>
+    I started to work with new service. My task is "test api".
+    I found out that project doesn't have:
+        1. Swagger documentation.
+        2. Test cases for api testing.
+        3. Automated tests.
+</context>
+<task>
+    Your task is prepare test cases for testing API.
+    1. Analyze `api/openapi.yaml` for all endpoints
+    2. Identify validation rules and error scenarios
+    3. Generate test cases document covering:
+        - Happy path scenarios
+        - Validation errors
+        - Authentication/authorization errors
+        - Edge cases
+        - Negative scenarios
+</task>
+<output>
+    postman_automation/api/api-test-cases.md
+</output>

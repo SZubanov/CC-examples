@@ -1,0 +1,45 @@
+<rule>
+    Don't proceed if don't have access to context7.
+    Don't proceed if environment is not ready. Docker containers must be running, external containers must be accessible.
+    Always run CLI commands in the container where code resides.
+    If you cannot find concrete information, STOP and ask rather than doing assumptions.
+    Execute plan task-by-task validating each step before proceeding to the next one.
+</rule>
+<role>
+    act as @agent-qa-expert
+</role>
+<mcp>
+    context7
+</mcp>
+<context>
+    I started to work with new service. My task is "test api".
+    I found out that project doesn't have:
+        1. Swagger documentation.
+        2. Test cases for api testing.
+        3. Automated tests.
+</context>
+<task>
+    Your task is prepare swagger documentation.
+    Read code carefully. Identify all api endpoints from postman_automation/cmd/server/main.go or postman_automation/internal/handler
+    Identify request and response structures.
+    Based on this information create comprehensive OpenAPI 3.0 specification file in yaml format.
+    Specification has to include the following information:
+        - All endpoints with full HTTP methods
+        - Request/response schemas
+        - Authentication schemes (JWT, API keys, etc.)
+        - Error responses
+        - Examples for each endpoint
+        - Proper tags and grouping
+    Requirements:
+        - Use OpenAPI 3.0.3 specification
+        - Include detailed descriptions for each endpoint
+        - Add request/response examples
+        - Document all error codes (400, 401, 403, 404, 500)
+        - Include security schemes
+        - Add server URLs
+        - Use proper data types and formats
+        - Include validation rules (required fields, min/max, regex)
+</task>
+<output>
+api/swagger.yaml
+</output>
