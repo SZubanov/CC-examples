@@ -2,13 +2,21 @@ Collect all Jira tickets where I am the reporter, assignee, or code reviewer, an
 Provide a summary of my current tasks, then check Gmail for any emails requiring action on my part. Additionally, if there are any team digests in Gmail or Slack regarding payments or technology, please include those as well.
 
 Output for tasks:
-Type of source: Jira, Gmail, Slack \n
-Action required: Yes/No \n
-Jira ticket of applicable \n 
-Last changes \n
-What should I do. \n
+Type of source: Jira, Gmail, Slack
+
+Action required: Yes/No
+
+Jira ticket of applicable
+
+Last changes
+
+What should I do.
+
+---
 
 Output for info:
-Type of source: Jira, Gmail, Slack \n
-Action required: Yes/No  \n
-What happend \n
+Type of source: Jira, Gmail, Slack
+
+Action required: Yes/No
+
+What happend
