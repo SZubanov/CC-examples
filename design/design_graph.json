@@ -1,0 +1,1129 @@
+{
+    "meta": {
+        "document": "Profile Card App — Structured Design Brief",
+        "prd_version": "v3.0",
+        "moodboard_version": "visual_audit_moodboard_v1",
+        "created": "2026-04-09",
+        "version": "v2.0",
+        "updated": "2026-04-11",
+        "changelog": "v2.0: Added brand_identity, navigation_architecture, delivery_checklist, resolved_numbers, and user_flows sections to prevent misalignment between brief and design delivery.",
+        "purpose": "Actionable brief for UI/visual designers covering all 16 screens (ordered by design complexity), badge iconography, typography, density, acceptance criteria, and voice/tone samples.",
+        "all_screens_by_complexity": [
+            "S-03 Card Editor (density 4)",
+            "S-11 Discovery Feed (density 4)",
+            "S-07 Badge Shop (density 4) — hero",
+            "S-02 My Card Owner View (density 3) — hero",
+            "S-05 Badge Collection (density 5) — hero",
+            "S-16 Web Card Page (density 3)",
+            "S-12 Card Analytics (density 3)",
+            "S-09 Card Settings (density 3)",
+            "S-15 Notification Center (density 3)",
+            "S-04 Viewer View (density 2)",
+            "S-06 Badge Detail (density 2)",
+            "S-10 Story Editor (density 2)",
+            "S-14 Badge Earned Celebration (density 1) — hero",
+            "S-01 Onboarding (density 1) — hero",
+            "S-13 Platform Connect (density 1)",
+            "S-08 Share Sheet (density 1)"
+        ],
+        "original_hero_screens": [
+            "S-01",
+            "S-02",
+            "S-05",
+            "S-07",
+            "S-14"
+        ]
+    },
+    "brand_identity": {
+        "purpose": "LOCKED. The designer must use these names exactly as specified. Do not introduce alternative product names, codenames, or working titles in any UI mockup without written approval from the product owner.",
+        "product_name": "Profile Card",
+        "product_name_full": "Profile Card App",
+        "product_name_in_ui": "Profile Card",
+        "permitted_abbreviations": [
+            "PC App"
+        ],
+        "prohibited_names": [
+            "Do NOT use: Aura, Aura Identity, Curator, CardMe, TG Card, or any other invented name in UI chrome, splash screens, settings footers, or marketing copy."
+        ],
+        "tagline": "Your Telegram life, one card.",
+        "footer_text": "Profile Card v{version} — Built on Telegram",
+        "tone_of_footer": "Functional and neutral. Do NOT use aspirational or exclusionary language like 'Built for the elite' or 'For power users only.' The product is for all Telegram users.",
+        "domain": "yourcard.link (pending OQ-7 resolution — use this as placeholder in all mockups)"
+    },
+    "navigation_architecture": {
+        "purpose": "Canonical navigation model. The designer must implement exactly this structure. Do not create alternative tab bars, rename tabs, or reassign screens to different tabs without written approval.",
+        "tab_bar": {
+            "position": "Bottom of screen, always visible on primary screens",
+            "tabs": [
+                {
+                    "tab": "My Card",
+                    "icon": "card",
+                    "destination": "S-02",
+                    "label": "My Card"
+                },
+                {
+                    "tab": "Shop",
+                    "icon": "store",
+                    "destination": "S-07",
+                    "label": "Shop"
+                },
+                {
+                    "tab": "Badges",
+                    "icon": "grid",
+                    "destination": "S-05",
+                    "label": "Badges"
+                },
+                {
+                    "tab": "Feed",
+                    "icon": "compass",
+                    "destination": "S-11",
+                    "label": "Feed"
+                }
+            ]
+        },
+        "header_actions": {
+            "position": "Top-right of screen on S-02 (My Card)",
+            "actions": [
+                {
+                    "icon": "bell",
+                    "destination": "S-15",
+                    "label": "Notifications",
+                    "badge_indicator": "Unread count"
+                },
+                {
+                    "icon": "gear",
+                    "destination": "S-09",
+                    "label": "Settings"
+                }
+            ]
+        },
+        "screen_access_map": {
+            "tab_destinations": [
+                "S-02 My Card",
+                "S-07 Badge Shop",
+                "S-05 Badge Collection",
+                "S-11 Discovery Feed"
+            ],
+            "header_accessible": [
+                "S-09 Settings",
+                "S-15 Notification Center"
+            ],
+            "action_bar_on_S-02": [
+                "S-03 Card Editor (Edit button)",
+                "S-08 Share Sheet (Share button)",
+                "S-09 Settings (Settings button)"
+            ],
+            "modal_sheets": [
+                "S-06 Badge Detail (bottom sheet from any badge tap)",
+                "S-08 Share Sheet (bottom sheet from Share action)"
+            ],
+            "full_screen_overlays": [
+                "S-14 Badge Earned Celebration (triggered by badge unlock)",
+                "S-13 Platform Connect (triggered from S-09 or S-05 locked badge)"
+            ],
+            "standalone_flows": [
+                "S-01 Onboarding (first launch only)",
+                "S-10 Story Editor (from S-02 story banner tap)",
+                "S-16 Web Card Page (external browser, not in-app)"
+            ],
+            "contextual_navigation": {
+                "S-04_viewer_view": "Opened when tapping another user's card from S-11 Feed, notifications, or direct link",
+                "S-12_analytics": "Accessed from S-02 action bar or S-09 settings"
+            }
+        },
+        "tab_bar_visibility_rules": [
+            "Tab bar is visible on: S-02, S-05, S-07, S-09, S-11, S-12, S-15",
+            "Tab bar is hidden on: S-01, S-03, S-04, S-06, S-08, S-10, S-13, S-14, S-16",
+            "Hidden screens use a back/close button in the top-left to return to the previous screen"
+        ]
+    },
+    "delivery_checklist": {
+        "purpose": "Every screen listed below MUST have a delivered mockup. The designer should check off each screen upon completion. Missing screens block engineering handoff.",
+        "wave_1_hero_screens": {
+            "deadline": "First design review",
+            "screens": [
+                {
+                    "id": "S-01",
+                    "name": "Onboarding / Card Creation",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-02",
+                    "name": "My Card (Owner View)",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-05",
+                    "name": "Badge Collection",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-07",
+                    "name": "Badge Shop",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-14",
+                    "name": "Badge Earned Celebration",
+                    "required": true,
+                    "delivered": false
+                }
+            ]
+        },
+        "wave_2_critical_path": {
+            "deadline": "Second design review",
+            "screens": [
+                {
+                    "id": "S-03",
+                    "name": "Card Editor",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-04",
+                    "name": "Card (Viewer View)",
+                    "required": true,
+                    "delivered": false,
+                    "note": "Critical for growth loop — this is what shared cards look like to recipients"
+                },
+                {
+                    "id": "S-08",
+                    "name": "Share Sheet",
+                    "required": true,
+                    "delivered": false,
+                    "note": "Critical for growth loop — this is the share-as-distribution mechanic"
+                },
+                {
+                    "id": "S-11",
+                    "name": "Discovery Feed",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-16",
+                    "name": "Web Card Page (desktop + mobile)",
+                    "required": true,
+                    "delivered": false
+                }
+            ]
+        },
+        "wave_3_supporting_screens": {
+            "deadline": "Third design review",
+            "screens": [
+                {
+                    "id": "S-06",
+                    "name": "Badge Detail (bottom sheet)",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-09",
+                    "name": "Card Settings",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-10",
+                    "name": "Card Story Editor",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-12",
+                    "name": "Card Analytics",
+                    "required": true,
+                    "delivered": false
+                },
+                {
+                    "id": "S-13",
+                    "name": "Platform Connect Flow",
+                    "required": true,
+                    "delivered": false,
+                    "note": "Include pre-OAuth, loading, and success states"
+                },
+                {
+                    "id": "S-15",
+                    "name": "Notification Center",
+                    "required": true,
+                    "delivered": false
+                }
+            ]
+        },
+        "additional_deliverables": [
+            {
+                "item": "Badge icon specimens (8 examples across 4 rarity tiers)",
+                "required": true,
+                "delivered": false
+            },
+            {
+                "item": "Rarity ring + class indicator (✓/⭐/☆) at 32dp, 48dp, 96dp sizes",
+                "required": true,
+                "delivered": false
+            },
+            {
+                "item": "Locked badge state (greyscale + dotted border) specimen",
+                "required": true,
+                "delivered": false
+            },
+            {
+                "item": "Telegram Day mode variant for S-02 and S-04",
+                "required": true,
+                "delivered": false
+            },
+            {
+                "item": "PNG share card at 1080x1920 and 280x280 thumbnail preview",
+                "required": true,
+                "delivered": false
+            }
+        ]
+    },
+    "resolved_numbers": {
+        "purpose": "LOCKED VALUES. These numbers have been finalised and must be used exactly as specified. If conflicting numbers appear elsewhere in documentation, these values take precedence.",
+        "pinned_badge_slots": {
+            "free_tier": 3,
+            "premium_tier": 6,
+            "upgrade_price": "99 Stars (one-time)",
+            "note": "PRD Section 5.4 says 3/6. AC-S02-3 previously said 5/8 — this was a documentation error. The correct values are 3 free / 6 premium. AC-S02-3 should be read as 3/6."
+        },
+        "badge_icon_sizes": {
+            "collection_grid": "32x32dp",
+            "card_pinned_slot": "48x48dp",
+            "detail_and_celebration": "96x96dp",
+            "class_indicator_inset": "12dp"
+        },
+        "rarity_ring": {
+            "width": "2dp solid",
+            "common": "#8E8E93",
+            "rare": "#007AFF",
+            "epic": "#AF52DE",
+            "legendary": "#FF9500"
+        },
+        "card_story": {
+            "max_characters": 120,
+            "duration_options": [
+                "24h",
+                "7d",
+                "30d"
+            ],
+            "free_tier_active_stories": 1,
+            "colour_presets": "8-10 from design system palette"
+        },
+        "typography_hero_display": {
+            "size_range": "28-36sp",
+            "weight": "Black/Heavy"
+        },
+        "onboarding": {
+            "max_taps_to_create": 4,
+            "max_seconds": 60,
+            "free_themes_offered": 3,
+            "steps": "3-4 full-screen swipeable pages"
+        },
+        "share_artefact": {
+            "png_aspect_ratio": "9:16",
+            "thumbnail_legibility_target": "280x280px",
+            "screenshot_resolution": "1080x1920"
+        },
+        "celebration_animation_duration": {
+            "common": "1-1.5 seconds",
+            "rare": "2-3 seconds",
+            "epic": "3-4 seconds",
+            "legendary": "4-5 seconds"
+        },
+        "density_levels": {
+            "level_1": [
+                "S-01",
+                "S-08",
+                "S-13",
+                "S-14"
+            ],
+            "level_2": [
+                "S-04",
+                "S-06",
+                "S-10"
+            ],
+            "level_3": [
+                "S-02",
+                "S-09",
+                "S-12",
+                "S-15",
+                "S-16"
+            ],
+            "level_4": [
+                "S-03",
+                "S-07",
+                "S-11"
+            ],
+            "level_5": [
+                "S-05"
+            ]
+        }
+    },
+    "user_flows": {
+        "purpose": "Core user journeys that show how screens connect. The designer must ensure every screen in a flow has been delivered and that transitions between screens are accounted for in the mockups.",
+        "flow_1_first_time_user": {
+            "name": "First Launch → Card Created",
+            "steps": [
+                "App opens → S-01 Onboarding (Step 1: avatar + name auto-pulled from Telegram)",
+                "S-01 Step 2: Choose base card theme (3 free options)",
+                "S-01 Step 3: Card assembles with materialisation animation",
+                "S-01 Step 4: 'Your card is live' → CTA: 'Explore Your Card'",
+                "→ S-02 My Card (Owner View) — tab bar now visible"
+            ],
+            "critical_screens": [
+                "S-01",
+                "S-02"
+            ]
+        },
+        "flow_2_share_loop": {
+            "name": "Owner Shares Card → Viewer Opens → Converts",
+            "steps": [
+                "S-02 My Card → tap Share in action bar",
+                "→ S-08 Share Sheet (bottom sheet): choose Image or Link",
+                "Image path: PNG sent in Telegram chat → recipient sees card thumbnail",
+                "Link path: yourcard.link/@username shared → recipient opens in browser",
+                "→ S-16 Web Card Page (if link) or inline preview (if image)",
+                "→ S-04 Viewer View (if opened in Telegram Mini App)",
+                "→ Viewer taps 'Build your own card' CTA → S-01 Onboarding (new user)"
+            ],
+            "critical_screens": [
+                "S-02",
+                "S-08",
+                "S-16",
+                "S-04",
+                "S-01"
+            ],
+            "note": "This is the primary growth loop. Every screen in this flow is required."
+        },
+        "flow_3_platform_connect": {
+            "name": "Connect Platform → Earn Badges → Celebrate",
+            "steps": [
+                "S-09 Settings → Connected Platforms → tap 'Connect GitHub'",
+                "→ S-13 Platform Connect (OAuth consent screen)",
+                "→ External OAuth redirect → return to app",
+                "→ S-13 progress indicator ('Checking your badges on GitHub...')",
+                "→ S-14 Badge Earned Celebration (sequential carousel if multiple badges)",
+                "→ S-02 My Card (badges now visible in collection)"
+            ],
+            "critical_screens": [
+                "S-09",
+                "S-13",
+                "S-14",
+                "S-02"
+            ]
+        },
+        "flow_4_badge_shop_purchase": {
+            "name": "Browse Shop → Preview → Purchase → Equip",
+            "steps": [
+                "Tab bar → S-07 Badge Shop",
+                "Browse featured carousel or category grid → tap item",
+                "→ Live preview overlay (shows badge/theme on user's actual card)",
+                "→ Tap 'Buy' → Telegram Stars native payment",
+                "→ Confirmation animation (ka-ching + sparkle)",
+                "→ Badge appears in S-05 Badge Collection",
+                "→ User can tap badge → S-06 Badge Detail → 'Pin to Card'",
+                "→ S-02 My Card (badge now pinned)"
+            ],
+            "critical_screens": [
+                "S-07",
+                "S-05",
+                "S-06",
+                "S-02"
+            ]
+        },
+        "flow_5_card_customisation": {
+            "name": "Edit Card Appearance",
+            "steps": [
+                "S-02 My Card → tap Edit in action bar",
+                "→ S-03 Card Editor (live preview top, tabs bottom)",
+                "Browse Theme / Badges / Widgets / Frame tabs",
+                "Tap items → live preview updates instantly",
+                "Tap 'Save' → PNG re-rendered → CDN cache busted",
+                "→ S-02 My Card (updated card visible)"
+            ],
+            "critical_screens": [
+                "S-02",
+                "S-03"
+            ]
+        },
+        "flow_6_discovery_and_aspiration": {
+            "name": "Browse Feed → View Card → Get Inspired",
+            "steps": [
+                "Tab bar → S-11 Discovery Feed",
+                "Browse Trending / Top Badges / New & Notable / Staff Picks",
+                "Tap a card thumbnail → S-04 Viewer View",
+                "Tap a badge → S-06 Badge Detail (bottom sheet)",
+                "See 'View All Badges' → S-05 Badge Collection (public variant, no locked section)",
+                "Get inspired → return to S-02 → tap Edit → S-03 Card Editor"
+            ],
+            "critical_screens": [
+                "S-11",
+                "S-04",
+                "S-06",
+                "S-05"
+            ]
+        }
+    },
+    "all_screens": {
+        "S-01_onboarding": {
+            "title": "Onboarding / Card Creation",
+            "prd_purpose": "First-time user creates their card in under 60 seconds.",
+            "visual_references": [
+                {
+                    "ref_id": "REF-11",
+                    "platform": "Apple Wallet",
+                    "what_to_borrow": "Card-as-metaphor anatomy: logo/avatar strip at top, hero identity zone in the middle, badge/stat strip below, shareable barcode/QR at the bottom. Layered elevation via light overlays and subtle borders. The card 'materialises' on screen rather than appearing statically.",
+                    "specific_elements": [
+                        "Rounded corners with subtle shadow for depth",
+                        "Consistent card anatomy across all card types",
+                        "Dark mode palette #1C1C1E with #E0E0E0 text"
+                    ]
+                },
+                {
+                    "ref_id": "REF-15",
+                    "platform": "Telegram Mini App Theming",
+                    "what_to_borrow": "All chrome colours inherited from themeParams. Day/Night switching must work automatically. Use TelegramUI React components for the input step (name, avatar selection).",
+                    "specific_elements": [
+                        "bg_color and secondary_bg_color as the base layer",
+                        "button_color for the primary CTA",
+                        "Real-time theme sync on toggle"
+                    ]
+                },
+                {
+                    "ref_id": "REF-01",
+                    "platform": "Spotify Wrapped Cards",
+                    "what_to_borrow": "One-stat-per-step simplicity. Each onboarding step should present a single action or choice — never two decisions on one screen. Black-and-white base with a single vivid accent keeps each step fresh.",
+                    "specific_elements": [
+                        "Single focal point per step",
+                        "Bold sans-serif display text for the headline",
+                        "Scratchy analog texture accents for warmth"
+                    ]
+                }
+            ],
+            "anti_references": [
+                {
+                    "platform": "LinkedIn Profile Setup",
+                    "what_to_avoid": "Multi-field forms crammed onto one screen. Completeness progress bars that create anxiety rather than excitement. Corporate blue sterility.",
+                    "reason": "Onboarding must feel like 30 seconds of play, not 5 minutes of form-filling."
+                },
+                {
+                    "platform": "Facebook Avatar Builder",
+                    "what_to_avoid": "Overwhelming grid of customisation options presented before the user has context for why they matter. Feature overload on first touch.",
+                    "reason": "The editor is S-03. Onboarding (S-01) is about instant card creation with Telegram data — defer customisation."
+                }
+            ],
+            "emotional_target": {
+                "primary": "Excitement + Ease",
+                "user_inner_monologue": "This is going to be cool AND I can do it in 30 seconds.",
+                "anxiety_level": "Near zero — every step has one obvious action",
+                "anticipation_level": "High — the card preview builds progressively as they step through",
+                "animation_mood": "Playful entrance animations; the card materialises from sparks/particles as it assembles step by step",
+                "sound": "Subtle chime on card creation complete"
+            },
+            "density": {
+                "level": 1,
+                "max_elements_per_step": "1 input or action + 1 illustration/card-preview",
+                "whitespace_ratio": "≥60% of viewport is breathing room",
+                "rationale": "Spotify Wrapped one-stat-per-card approach. Maximum whitespace. Zero cognitive overload."
+            },
+            "layout_guidance": "3–4 full-screen steps: (1) Telegram avatar + name auto-pulled with a 'This is you' confirmation, (2) choose a base card theme (3 free options), (3) card assembles with animation, (4) 'Your card is ready — share or explore.' Each step is a swipeable page, not a scroll."
+        },
+        "S-02_my_card_owner_view": {
+            "title": "My Card (Owner View)",
+            "prd_purpose": "The user's own card as they see it. Hub for all actions. Shows pinned badges (5 free / 8 premium), live widgets, story banner, and action bar.",
+            "visual_references": [
+                {
+                    "ref_id": "REF-04",
+                    "platform": "Steam Profile — Badge & Level Showcase",
+                    "what_to_borrow": "Modular showcase blocks on a dark canvas. Level-gated unlocks that pace content density. Self-reinforcing badge → level → showcase slot flywheel. Dark background (#1B2838) makes colourful badges pop.",
+                    "specific_elements": [
+                        "Modular blocks the user can reorder",
+                        "Progression-gated slots (free → premium)",
+                        "High-contrast colourful elements on dark base"
+                    ]
+                },
+                {
+                    "ref_id": "REF-09",
+                    "platform": "Duolingo Profile — Streaks, Badges & XP",
+                    "what_to_borrow": "One hero metric as the emotional anchor (streak flame = total badge score or card views). Colour-coded badge progression tiers (grey → bronze → silver → gold). Celebration animations drive screenshot-sharing.",
+                    "specific_elements": [
+                        "Large, bold hero number front and centre",
+                        "Colour tiers for rarity without labels",
+                        "Badge unlock drives store purchases (+13%) and friend-adds (+116%)"
+                    ]
+                },
+                {
+                    "ref_id": "REF-12",
+                    "platform": "Bento.me Grid Profile",
+                    "what_to_borrow": "Asymmetric bento-grid layout with mixed content types (text, image, embed, stat, link). Each tile independently styled. Glassmorphism overlays for depth on gradient backgrounds.",
+                    "specific_elements": [
+                        "Variable-size widget tiles",
+                        "Frosted-glass overlay on card surface",
+                        "Each tile independently shareable"
+                    ]
+                },
+                {
+                    "ref_id": "REF-13",
+                    "platform": "GitHub Profile README",
+                    "what_to_borrow": "Contribution heatmap as un-fakeable activity proof. Shields.io-style pill badges for compact metadata. Streak counter mechanic. Pinned repos = curated best work showcase.",
+                    "specific_elements": [
+                        "Activity heatmap widget possibility",
+                        "Pill-style stat indicators",
+                        "Pinned slots = curated showcase"
+                    ]
+                }
+            ],
+            "anti_references": [
+                {
+                    "platform": "Instagram Profile Grid",
+                    "what_to_avoid": "Uniform square grid with no hierarchy. Every tile the same size communicates nothing about priority. Content-heavy but meaning-light.",
+                    "reason": "The owner view needs visual hierarchy: hero metric > pinned badges > widgets > story. Not a flat grid of equal items."
+                },
+                {
+                    "platform": "Caps (Telegram)",
+                    "what_to_avoid": "NFT-centric aesthetic (hexagonal frames, blockchain terminology, wallet-connect UX). Crypto-native visual language alienates 95% of Telegram users.",
+                    "reason": "Profile Card is cosmetic-first, not crypto-first. Stars economy, not wallet economy."
+                }
+            ],
+            "emotional_target": {
+                "primary": "Pride + Ownership",
+                "user_inner_monologue": "This is MY identity card. It looks incredible and it's all real.",
+                "pride_source": "Earned badges with ✓ checkmarks prove real achievement",
+                "ownership_signal": "Customised theme, curated pinned badges, personal story banner",
+                "animation_mood": "Subtle breathing/shimmer on the card surface; badges gently pulse on first view of the day",
+                "sound": "None — this is the ambient home screen"
+            },
+            "density": {
+                "level": 3,
+                "max_elements": "8–12 visual elements in a structured bento grid",
+                "breakdown": "Avatar + username + story banner + pinned badges (5–8) + 1–2 live stat widgets + action bar (edit, share, settings)",
+                "whitespace_ratio": "~40% — information-rich but scannable",
+                "rationale": "Bento-grid medium density. Enough to feel 'full' and impressive without overwhelming."
+            },
+            "layout_guidance": "Apple Wallet card anatomy: avatar strip at top → hero identity zone (name, level, hero metric) → pinned badge row (horizontal scroll or 2-row grid) → live widget tiles (bento layout) → story banner → action bar (edit, share, analytics). Card viewport uses purchasable theme overlay; app chrome uses Telegram themeParams."
+        },
+        "S-05_badge_collection": {
+            "title": "Badge Collection",
+            "prd_purpose": "Full badge inventory. Owner variant shows earned (by platform, rarity-sorted), purchased (by pack/date), special (trophies section), and locked (greyed, criteria visible). Public viewer variant omits locked badges.",
+            "visual_references": [
+                {
+                    "ref_id": "REF-10",
+                    "platform": "PlayStation Trophy Card & Platinum Mosaic",
+                    "what_to_borrow": "Dense mosaic grid where the sheer count IS the status signal. Trophy-tier colour system (bronze/silver/gold/platinum) with zero learning curve. Dynamic rarity display based on global earn rate.",
+                    "specific_elements": [
+                        "Dense icon grid — visual density = dedication signal",
+                        "Tier colours universally understood",
+                        "Fractional XP from partial progress keeps engagement"
+                    ]
+                },
+                {
+                    "ref_id": "REF-09",
+                    "platform": "Duolingo Profile Badges",
+                    "what_to_borrow": "Colour-coded progression (grey → bronze → silver → gold) makes rarity instantly readable. Scrollable achievement sections with clear groupings.",
+                    "specific_elements": [
+                        "Rarity readable at a glance via colour",
+                        "Section grouping by category/platform",
+                        "Locked badges with visible unlock criteria"
+                    ]
+                },
+                {
+                    "ref_id": "REF-13",
+                    "platform": "GitHub Contribution Graph & Badges",
+                    "what_to_borrow": "Heatmap-density visual for earned authenticity. Shields.io pill badges for metadata. The collection should feel like a living portfolio, not a static list.",
+                    "specific_elements": [
+                        "Platform-grouped sections with headers",
+                        "Earned authenticity principle front and centre",
+                        "Streak counter for engagement"
+                    ]
+                }
+            ],
+            "anti_references": [
+                {
+                    "platform": "Generic Achievement List (JIRA-style)",
+                    "what_to_avoid": "Flat text lists with no visual differentiation. Badges rendered as text titles in a table. No colour, no iconography, no density.",
+                    "reason": "The collection must be visual-first. The grid of icons IS the experience — not a data table."
+                },
+                {
+                    "platform": "App Store Badge Walls (e.g., Foursquare legacy)",
+                    "what_to_avoid": "All badges same size, same border, same prominence. No rarity signal. Every badge feels equally worthless when displayed identically.",
+                    "reason": "Rarity rings, glow effects, and locked-state visual differentiation are non-negotiable."
+                }
+            ],
+            "emotional_target": {
+                "primary": "Accomplishment + Aspiration",
+                "user_inner_monologue_earned": "Look at everything I've built. This is my story.",
+                "user_inner_monologue_locked": "I'm 2 commits away from that badge. Let me go earn it.",
+                "satisfaction_driver": "Seeing a dense, colourful grid of earned badges with ✓ checkmarks",
+                "aspiration_driver": "Greyed-out locked badges with visible criteria create pull",
+                "animation_mood": "Earned badges glow softly on their rarity colour; locked badges have a subtle 'unlock' shimmer on tap",
+                "sound": "None — this is a browsing/inventory screen"
+            },
+            "density": {
+                "level": 5,
+                "max_elements": "150+ badge icons in a dense scrollable grid",
+                "grid_spec": "4–5 columns on mobile at 32dp icon size, expanding to 6–8 on tablet/web",
+                "section_structure": "Special (Trophies) → Earned (grouped by platform, rarity desc) → Purchased (by pack/date) → Locked (criteria visible)",
+                "rationale": "PlayStation mosaic density. The visual mass of badges IS the status signal. Dense and proud."
+            },
+            "layout_guidance": "Sticky top bar with badge count summary (e.g., '47 / 150 earned'). Section headers with platform icons. Each badge is a 32dp rounded-square with rarity-coloured ring. Tap opens S-06 badge detail sheet. Owner view: locked badges at bottom with greyed state + unlock criteria tooltip. Viewer view: no locked section."
+        }
+    },
+    "badge_icon_style_direction": {
+        "system": "Dual-layer icon system — badge icons are illustrative, UI icons are outlined",
+        "badge_icons": {
+            "style": "Filled, rounded, illustrative — each badge tells a micro-story through its icon",
+            "shape": "Rounded square with 8dp corner radius, matching Telegram's sticker/emoji shape language",
+            "sizes": {
+                "collection_grid": "32×32dp",
+                "card_pinned_slot": "48×48dp",
+                "detail_and_celebration": "96×96dp"
+            },
+            "rarity_ring": {
+                "width": "2dp solid ring around the badge icon",
+                "colours": {
+                    "common": "#8E8E93 (grey)",
+                    "uncommon": "#34C759 (green)",
+                    "rare": "#007AFF (blue)",
+                    "epic": "#AF52DE (purple)",
+                    "legendary": "#FF9500 (gold)"
+                },
+                "effects": {
+                    "common": "Solid ring, no additional effect",
+                    "uncommon": "Solid ring + subtle green flash on unlock",
+                    "rare": "Solid ring + shimmer overlay that moves across the surface",
+                    "epic": "Solid ring + soft outer glow (4dp blur, rarity colour at 30% opacity)",
+                    "legendary": "Solid ring + particle burst aura + golden shimmer"
+                }
+            },
+            "class_indicators": {
+                "earned": "✓ checkmark inset at bottom-right, 12dp, white icon on rarity-colour circle",
+                "purchased": "⭐ star inset at bottom-right, 12dp, white icon on #FF375F (Stars Pink) circle",
+                "special": "☆ outline star inset at bottom-right, 12dp, #FFD700 (Star Gold) on dark circle"
+            },
+            "platform_source": "8dp monochrome platform logo watermark at top-left corner of badge icon",
+            "locked_state": {
+                "colour": "Greyscale + 40% opacity",
+                "border": "Dotted line replacing solid rarity ring",
+                "overlay": "Subtle lock icon at centre (optional, only in collection grid)"
+            },
+            "illustration_principles": [
+                "Each badge icon should be recognisable at 32dp — avoid fine detail that disappears at small sizes",
+                "Use the platform's brand colour as a dominant fill (e.g., GitHub badges lean dark/green, Spotify badges lean green/black)",
+                "Achievement icons should depict the accomplishment metaphorically (e.g., 'Star Collector' = star constellation, not a literal number)",
+                "Avoid photographic or hyper-realistic styles — keep to flat/semi-flat illustrative with subtle gradients",
+                "Maintain a consistent 2dp internal padding from the icon edge to the rarity ring"
+            ],
+            "design_system_references": [
+                "Duolingo colour-coded progression badges",
+                "Discord horizontal badge row",
+                "PlayStation trophy tier icons",
+                "Shields.io pill format for metadata indicators"
+            ]
+        },
+        "ui_icons": {
+            "style": "Outlined, 2dp stroke, rounded caps and joins — matching Telegram's native icon language",
+            "recommended_library": "Lucide or Phosphor (outline weight 1.5–2.0)",
+            "sizes": {
+                "inline": "20dp",
+                "navigation": "24dp",
+                "action_bar": "28dp"
+            },
+            "colour_inheritance": "hint_color for secondary, text_color for primary, button_color for interactive — all from Telegram themeParams"
+        },
+        "platform_connection_icons": {
+            "style": "Monochrome brand logos at 20dp; full-colour on connected state",
+            "source": "Simple Icons (2400+ brand SVGs) or official platform brand kits",
+            "connected": "Full-colour brand logo",
+            "disconnected": "Monochrome #8E8E93 with dashed underline"
+        }
+    },
+    "typography_and_density_spec": {
+        "typography": {
+            "font_stack": "System default — SF Pro (iOS), Roboto (Android) — inherited from Telegram for native feel",
+            "scale": {
+                "hero_display": {
+                    "size": "28–36sp",
+                    "weight": "Black/Heavy",
+                    "use": "Celebration badge name, hero metric on S-02, onboarding headlines",
+                    "style": "Tabular lining figures for numbers"
+                },
+                "card_username": {
+                    "size": "20–24sp",
+                    "weight": "Bold",
+                    "use": "Username beneath avatar on card",
+                    "alignment": "Centre"
+                },
+                "section_heading": {
+                    "size": "16–18sp",
+                    "weight": "Semibold",
+                    "use": "Section headers in badge collection, shop categories, settings groups"
+                },
+                "body": {
+                    "size": "14–16sp",
+                    "weight": "Regular",
+                    "use": "Descriptions, proof text, notification body",
+                    "colour": "themeParams.text_color"
+                },
+                "badge_label": {
+                    "size": "11–12sp",
+                    "weight": "Medium",
+                    "use": "Badge name under icon in collection grid",
+                    "truncation": "Single-line with ellipsis"
+                },
+                "caption": {
+                    "size": "10–11sp",
+                    "weight": "Regular",
+                    "use": "Timestamps, secondary metadata, rarity labels",
+                    "colour": "themeParams.hint_color"
+                },
+                "stat_number": {
+                    "size": "24–32sp",
+                    "weight": "Bold",
+                    "use": "Analytics counters, card view count, Stars balance",
+                    "style": "Tabular lining figures, monospaced digits for alignment"
+                }
+            },
+            "principles": [
+                "Hero stats use Spotify Wrapped-style bold sans-serif display — large, confident, single-number storytelling",
+                "All other text uses Telegram's native typography system for seamless integration",
+                "Numbers always use tabular (monospaced) lining figures so counters don't shift layout during animation",
+                "Maximum two font weights per screen to avoid visual noise"
+            ]
+        },
+        "density_matrix": {
+            "level_definitions": {
+                "1_sparse": "Single focal point per viewport. ≥60% whitespace. One action.",
+                "2_focused": "2–5 elements with clear hierarchy. ~50% whitespace. Informational.",
+                "3_balanced": "8–12 elements in structured layout. ~40% whitespace. Scannable hub.",
+                "4_rich": "Mixed zones — spacious hero section + dense browsable grid. ~30% whitespace.",
+                "5_packed": "Maximum visual density. Scrollable grids of 20+ items. The density IS the point."
+            },
+            "screen_assignments": {
+                "level_1": [
+                    "S-01 Onboarding",
+                    "S-08 Share Sheet",
+                    "S-13 Platform Connect",
+                    "S-14 Celebration"
+                ],
+                "level_2": [
+                    "S-04 Viewer View",
+                    "S-06 Badge Detail",
+                    "S-10 Story Editor"
+                ],
+                "level_3": [
+                    "S-02 My Card",
+                    "S-09 Settings",
+                    "S-12 Analytics",
+                    "S-15 Notifications",
+                    "S-16 Web Card"
+                ],
+                "level_4": [
+                    "S-03 Card Editor",
+                    "S-07 Badge Shop",
+                    "S-11 Discovery Feed"
+                ],
+                "level_5": [
+                    "S-05 Badge Collection"
+                ]
+            }
+        }
+    },
+    "acceptance_criteria": {
+        "global": [
+            {
+                "id": "AC-G01",
+                "criterion": "Every screen renders correctly in both Telegram Day and Night themes, inheriting all colours from themeParams in real-time — no hardcoded colour values in app chrome."
+            },
+            {
+                "id": "AC-G02",
+                "criterion": "Card viewport uses purchasable theme overlays; app chrome ALWAYS uses Telegram themeParams. These two layers are visually distinct."
+            },
+            {
+                "id": "AC-G03",
+                "criterion": "All animations run at 60fps on a mid-range Android device (e.g., Samsung Galaxy A34). Use Lottie/Rive, not CSS-only animations for complex sequences."
+            },
+            {
+                "id": "AC-G04",
+                "criterion": "Badge icons are legible and their rarity colour ring is distinguishable at 32dp (smallest collection grid size)."
+            },
+            {
+                "id": "AC-G05",
+                "criterion": "✓ (earned), ⭐ (purchased), and ☆ (special) class indicators are visually distinct at 12dp inset size."
+            },
+            {
+                "id": "AC-G06",
+                "criterion": "Share artefacts (PNG export) are legible at 280×280px chat-bubble thumbnail size — one stat, one emotion, one accent colour per card."
+            },
+            {
+                "id": "AC-G07",
+                "criterion": "No screen exceeds its assigned density level. Density violations require design review."
+            },
+            {
+                "id": "AC-G08",
+                "criterion": "All numbers use tabular lining figures so counters do not shift layout during count-up animations."
+            }
+        ],
+        "per_hero_screen": {
+            "S-01_onboarding": [
+                {
+                    "id": "AC-S01-1",
+                    "criterion": "Card creation completes in ≤4 taps and ≤60 seconds from app open."
+                },
+                {
+                    "id": "AC-S01-2",
+                    "criterion": "Each onboarding step displays exactly one input/action — never two decisions on one screen."
+                },
+                {
+                    "id": "AC-S01-3",
+                    "criterion": "The card preview builds progressively across steps, with each step adding a visible element."
+                },
+                {
+                    "id": "AC-S01-4",
+                    "criterion": "Final step plays a card-materialisation animation (sparks/particles) lasting 1–2 seconds."
+                },
+                {
+                    "id": "AC-S01-5",
+                    "criterion": "Avatar and name are auto-populated from the Telegram profile with no manual input required."
+                }
+            ],
+            "S-02_my_card": [
+                {
+                    "id": "AC-S02-1",
+                    "criterion": "Card layout follows Apple Wallet anatomy: avatar strip → hero zone → badge row → widget tiles → story → action bar."
+                },
+                {
+                    "id": "AC-S02-2",
+                    "criterion": "One hero metric (badge score, card views, or level) is displayed at 28–36sp bold as the emotional anchor."
+                },
+                {
+                    "id": "AC-S02-3",
+                    "criterion": "Pinned badge row shows 5 badges (free) or 8 badges (premium) with horizontal scroll if needed."
+                },
+                {
+                    "id": "AC-S02-4",
+                    "criterion": "Earned badges display ✓ checkmark; purchased show ⭐; special show ☆. These are visible at card level, not only on tap."
+                },
+                {
+                    "id": "AC-S02-5",
+                    "criterion": "Card surface has a subtle breathing/shimmer animation that responds to the active theme."
+                },
+                {
+                    "id": "AC-S02-6",
+                    "criterion": "Story banner is visible at the top of the card when active, with text legible at 14sp."
+                }
+            ],
+            "S-05_badge_collection": [
+                {
+                    "id": "AC-S05-1",
+                    "criterion": "Badge grid displays at 4–5 columns on mobile (32dp per icon) with rarity ring visible on every badge."
+                },
+                {
+                    "id": "AC-S05-2",
+                    "criterion": "Sections follow the order: Special (Trophies) → Earned (by platform, rarity desc) → Purchased (by pack/date) → Locked (criteria visible). Owner view only for locked section."
+                },
+                {
+                    "id": "AC-S05-3",
+                    "criterion": "Locked badges render in greyscale at 40% opacity with dotted border. Tap reveals unlock criteria."
+                },
+                {
+                    "id": "AC-S05-4",
+                    "criterion": "Sticky top bar shows progress summary (e.g., '47 / 150 earned') and remains visible during scroll."
+                },
+                {
+                    "id": "AC-S05-5",
+                    "criterion": "Tapping any earned/purchased badge opens the S-06 Badge Detail sheet within 200ms."
+                },
+                {
+                    "id": "AC-S05-6",
+                    "criterion": "Public viewer variant omits the 'Locked' section entirely."
+                }
+            ]
+        }
+    },
+    "voice_and_tone_samples": {
+        "principles": {
+            "brand_personality": "Confident but warm. Playful but not childish. Achievement-focused but not elitist. The voice of a friend who's genuinely hyped about your accomplishments.",
+            "formality_level": "Casual-professional. Think Discord system messages meets Duolingo encouragement. Never corporate, never slangy.",
+            "verified_not_self_declared": "Every reference to badges or stats should subtly reinforce that these are EARNED and REAL — not self-reported."
+        },
+        "key_moments": {
+            "onboarding_welcome": {
+                "screen": "S-01",
+                "moment": "User opens the app for the first time",
+                "tone": "Warm, inviting, zero-pressure",
+                "sample_primary": "Your Telegram life, one card.",
+                "sample_secondary": "Let's build your card. It takes about 30 seconds.",
+                "sample_cta": "Get Started",
+                "anti_sample": "Welcome to Profile Card App! Create your digital identity profile now! (too corporate, too many exclamation marks)"
+            },
+            "card_created": {
+                "screen": "S-01 final step",
+                "moment": "Card creation animation completes",
+                "tone": "Celebratory, empowering",
+                "sample_primary": "Your card is live.",
+                "sample_secondary": "Share it, customise it, or start earning badges.",
+                "sample_cta": "Explore Your Card",
+                "anti_sample": "Congratulations! Your profile card has been successfully created! You can now proceed to… (too formal, too verbose)"
+            },
+            "badge_earned_common": {
+                "screen": "S-14",
+                "moment": "User earns a Common badge",
+                "tone": "Encouraging, brief",
+                "sample_primary": "Badge unlocked!",
+                "sample_detail": "First Steps — Joined your first Telegram channel.",
+                "sample_cta": "Pin to Card",
+                "anti_sample": "You have earned the 'First Steps' badge! This badge is awarded when… (too robotic)"
+            },
+            "badge_earned_legendary": {
+                "screen": "S-14",
+                "moment": "User earns a Legendary badge",
+                "tone": "Epic, reverent, the biggest moment in the app",
+                "sample_primary": "LEGENDARY",
+                "sample_detail": "Perfectionist — 100% achievements in a single game.",
+                "sample_proof": "Unlocked via Steam · 15 Mar 2026",
+                "sample_cta": "Show This Off",
+                "anti_sample": "You have unlocked a Legendary-tier badge. (too flat for the rarest achievement)"
+            },
+            "badge_collection_empty_state": {
+                "screen": "S-05",
+                "moment": "User has no badges yet",
+                "tone": "Motivating, not patronising",
+                "sample_primary": "Your badge wall is waiting.",
+                "sample_secondary": "Connect a platform or explore Telegram to start earning.",
+                "sample_cta": "Connect a Platform",
+                "anti_sample": "You don't have any badges yet. Please complete activities to earn badges. (too clinical)"
+            },
+            "badge_locked_criteria": {
+                "screen": "S-05 / S-06",
+                "moment": "User taps a locked badge to see unlock criteria",
+                "tone": "Aspirational, specific, actionable",
+                "sample_primary": "Star Collector",
+                "sample_criteria": "Earn 50+ stars on a GitHub repo.",
+                "sample_progress": "You're at 37. Almost there.",
+                "anti_sample": "This badge requires 50 GitHub stars. Current progress: 37/50. (too data-entry)"
+            },
+            "share_prompt": {
+                "screen": "S-08",
+                "moment": "User opens the share sheet",
+                "tone": "Confident, empowering",
+                "sample_primary": "Your card, anywhere.",
+                "sample_option_1": "Image — Perfect for chats and stories.",
+                "sample_option_2": "Link — A permanent page at yourcard.link/@username.",
+                "anti_sample": "Choose a sharing format: (1) Export as PNG image (2) Copy shareable URL (too menu-like)"
+            },
+            "shop_limited_drop": {
+                "screen": "S-07",
+                "moment": "User sees a limited-edition drop",
+                "tone": "Urgent but not manipulative, exclusive",
+                "sample_badge_name": "Neon Tokyo Pack",
+                "sample_detail": "4 cyberpunk badges + Neon Tokyo card theme.",
+                "sample_scarcity": "327 of 500 remaining",
+                "sample_cta": "Preview on Your Card",
+                "anti_sample": "HURRY! Only 327 left! BUY NOW before they're GONE FOREVER! (too aggressive, too manipulative)"
+            },
+            "platform_connect": {
+                "screen": "S-13",
+                "moment": "User is about to OAuth-connect a platform",
+                "tone": "Trustworthy, transparent, anticipatory",
+                "sample_primary": "Connect GitHub",
+                "sample_detail": "We'll check your public repos and stars. Read-only — we never post or change anything.",
+                "sample_cta": "Connect",
+                "sample_post_connect": "Connected! Checking your badges…",
+                "anti_sample": "Grant Profile Card App access to your GitHub account to retrieve your repository data. (too permission-request-y)"
+            },
+            "analytics_milestone": {
+                "screen": "S-12 / S-15",
+                "moment": "User's card hits a view milestone",
+                "tone": "Celebratory, social-proof",
+                "sample_notification": "Your card just hit 1,000 views.",
+                "sample_followup": "People are paying attention. Keep sharing.",
+                "anti_sample": "Milestone reached: 1,000 card views. (too system-log)"
+            },
+            "notification_badge_gifted": {
+                "screen": "S-15",
+                "moment": "Someone gifts the user a badge",
+                "tone": "Warm, personal, delighted",
+                "sample_notification": "@alexcodes sent you a badge!",
+                "sample_detail": "Neon Tokyo · Limited Drop",
+                "sample_cta": "View Badge",
+                "anti_sample": "You have received a badge gift from user @alexcodes. (too transactional)"
+            },
+            "web_card_cta": {
+                "screen": "S-16",
+                "moment": "Non-Telegram viewer sees the web card page",
+                "tone": "Impressive, inviting, single clear action",
+                "sample_primary": "@username's card",
+                "sample_cta": "Open in Telegram",
+                "sample_subtext": "Build your own card — free.",
+                "anti_sample": "This profile was created using Profile Card App for Telegram. Click here to download Telegram and create your own profile. (too many steps, too wordy)"
+            }
+        }
+    },
+    "colour_system_summary": {
+        "base_palette": {
+            "dark_mode": {
+                "background": "#1C1C1E",
+                "surface": "#2C2C2E",
+                "surface_elevated": "#3A3A3C",
+                "text_primary": "#E5E5EA",
+                "text_secondary": "#8E8E93"
+            },
+            "light_mode": {
+                "background": "#F2F2F7",
+                "surface": "#FFFFFF",
+                "surface_elevated": "#FFFFFF",
+                "text_primary": "#1C1C1E",
+                "text_secondary": "#8E8E93"
+            },
+            "note": "Fallbacks only. Production reads from Telegram themeParams."
+        },
+        "accents": {
+            "telegram_blue": "#0088CC",
+            "rarity": {
+                "common": "#8E8E93",
+                "uncommon": "#34C759",
+                "rare": "#007AFF",
+                "epic": "#AF52DE",
+                "legendary": "#FF9500"
+            },
+            "special_gold": "#FFD700",
+            "stars_pink": "#FF375F"
+        },
+        "theme_overlay_examples": [
+            {
+                "name": "Midnight Hacker",
+                "gradient": "linear-gradient(135deg, #0D0D0D, #1A1A2E, #16213E)",
+                "text": "#00FF41"
+            },
+            {
+                "name": "Sunset Drift",
+                "gradient": "linear-gradient(135deg, #FF6B6B, #FFA07A, #FFD700)",
+                "text": "#1C1C1E"
+            },
+            {
+                "name": "Arctic Frost",
+                "gradient": "linear-gradient(135deg, #E8EAF6, #B3E5FC, #80DEEA)",
+                "text": "#263238"
+            },
+            {
+                "name": "Neon Tokyo",
+                "gradient": "linear-gradient(135deg, #0F0C29, #302B63, #24243E)",
+                "text": "#FF00FF"
+            }
+        ]
+    },
+    "design_principles_checklist": [
+        "Dark-first, light-compatible: design for Night mode as primary, adapt to Day mode via themeParams.",
+        "Card-as-metaphor: every profile card follows Apple Wallet anatomy (avatar strip → hero zone → badge row → share action).",
+        "Earned authenticity: visual hierarchy always privileges earned/verified content over purchased cosmetics.",
+        "Bento modularity: the card and web view are composed of independently-styled widget tiles.",
+        "Chat-bubble-optimised: share artefacts must be legible at 280×280px thumbnail.",
+        "Proportional celebration: animation intensity scales with badge rarity.",
+        "Theme-aware particles: celebration effects use card theme accent colours, not hardcoded values.",
+        "Progressive reveal: multi-badge unlock uses sequential carousel with micro-narrative tension.",
+        "One-tap share: from 'see data' to 'broadcast identity' in a single gesture."
+    ]
+}
