@@ -1,0 +1,57 @@
+name: Shortcuts - Log Active Calories
+
+on:
+  workflow_dispatch:
+    inputs:
+      value:
+        description: "Active calories (float)"
+        required: true
+        type: string
+      date:
+        description: "Date (YYYY-MM-DD), optional"
+        required: false
+        type: string
+
+concurrency:
+  group: shortcuts-log-active-calories
+  cancel-in-progress: false
+
+jobs:
+  process-and-log:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+          cache-dependency-path: shortcuts/processor/go.mod
+
+      - name: Run processor
+        run: |
+          echo "inputs.value=${{ inputs.value }}"
+          echo "inputs.date=${{ inputs.date }}"
+          cd shortcuts/processor
+          go run . \
+            --value "${{ inputs.value }}" \
+            --date "${{ inputs.date }}" \
+            --file "../../data/active_calories.jsonl"
+
+      - name: Commit and push (if changed)
+        run: |
+          git add data/active_calories.jsonl
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "Shortcuts Bot"
+          git config user.email "shortcuts-bot@users.noreply.github.com"
+          git commit -m "log active calories for ${{ inputs.date || 'today' }}"
+          git push
+
